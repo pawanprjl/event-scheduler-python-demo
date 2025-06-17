@@ -13,7 +13,6 @@ class JobManager:
         self.scheduler.start()
 
     def shutdown(self):
-        self.event_handler.stop()
         self.scheduler.shutdown(wait=False)
 
     def add_job(self, func, trigger, **kwargs):

@@ -45,6 +45,7 @@ class EventScheduler:
 
         # Perform any necessary cleanup here
         self.job_manager.shutdown()
+        self.event_handler.stop()
 
         # Set shutdown event
         self._shutdown_event.set()
