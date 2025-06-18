@@ -1,7 +1,7 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from loguru import logger
 
-from app.events.event_handler import EventHandler
+from app.events import Event, EventType, EventHandler
 
 
 class JobManager:
@@ -22,7 +22,26 @@ class JobManager:
         logger.info("JobManager is starting up...")
         self.start()
 
-    async def handle_event(self, event):
+    async def handle_event(self, event: Event) -> bool:
+        """Handle a single event."""
+
         logger.debug(
-            f"Event handled: {event.type.value} (correlation_id: {event.correlation_id})"
+            f"Handling event: {event.type.value} (correlation_id: {event.correlation_id})"
         )
+
+        try:
+            if event.type == EventType.JOB_STARTED:
+                await self._handle_job_started(event)
+
+            elif event.type == EventType.SHUTDOWN_REQUESTED:
+                logger.info("Shutdown requested, stopping event handler")
+                return False  # Stop processing events
+
+        except Exception as e:
+            logger.error(f"Error handling event: {e}", exc_info=True)
+
+        return True  # Continue processing events
+
+    async def _handle_job_started(self, event: Event):
+        """Handle job started event."""
+        logger.info(f"Job started: {event.data.get('job_id')}")

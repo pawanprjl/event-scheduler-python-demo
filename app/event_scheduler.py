@@ -28,9 +28,12 @@ class EventScheduler:
         Process events from the event handler.
         """
         async for event in self.event_handler.listen():
-            logger.debug(
-                f"Processing event: {event.type.value} (correlation_id: {event.correlation_id})"
-            )
+            should_continue = await self.job_manager.handle_event(event)
+            if not should_continue:
+                logger.info(
+                    f"Event processing stopped for event: {event.type.value} (correlation_id: {event.correlation_id})"
+                )
+                break
 
     async def shutdown(self):
         if not self.running:
